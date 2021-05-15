@@ -5,6 +5,9 @@ export enum DownloadProgress{
     downloading,downloaded,downloadPossible,downloadImpossible
 }
 export interface DownloadStatus{
+    trackNo:number,
+    setTrackNo:(trackNo:number) => void,
+
     progressStatus:DownloadProgress,
     setProgressStatus: (progressStatus: DownloadStatus) => void,
 
@@ -26,6 +29,8 @@ export const initialDownloadStatus: DownloadStatus = {
     episode: null,
     setEpisode: () => null,
     cachedPath:null,
-    setCachedPath:() => null
+    setCachedPath:() => null,
+    trackNo: null,
+    setTrackNo:() => null
 }
 

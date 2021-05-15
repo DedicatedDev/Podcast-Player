@@ -2,18 +2,25 @@ import * as React from 'react'
 import { createContext, useReducer, useContext } from 'react'
 import { act } from 'react-test-renderer'
 import { PodCast } from '../views/home/Model'
-import { PlayerModel } from '../views/mediaPlayer/miniPlayer/PlayerModel'
+import { Audio} from "expo-av";
+import { DownloadStatus, initialDownloadStatus } from '../services/download/DownloadModel';
+import * as FileSystem from "expo-file-system";
 
 interface AppContextStatus {
     showPlayer: boolean,
     setShowPlayer: (showPlayer: boolean) => void,
     podcast: PodCast,
     setPodcast: (podcast: PodCast) => void,
-    playTrackNo: number,
+    playTrackNo: number|null,
     setPlayTrackNo: (playTrackNo: number) => void,
     cachedPaths: string[],
     setCachedPaths: (cachedPaths: string[]) => void,
     setCachedPath: (cachedPath: string, trackNO: number) => void
+    mediaInstance: Audio.Sound
+    setMediaInstance: (mediaInstance: Audio.Sound) => void
+
+    downloadStatus: DownloadStatus,
+    setDownloadStatus:(downloadStatus:DownloadStatus) => void
 }
 
 
@@ -26,12 +33,16 @@ const initialAppContext: AppContextStatus = {
     setPlayTrackNo: () => null,
     cachedPaths: [],
     setCachedPaths: () => [],
-    setCachedPath: () => []
+    setCachedPath: () => [],
+    mediaInstance:null,
+    setMediaInstance: () => null,
+    downloadStatus:initialDownloadStatus,
+    setDownloadStatus:() => initialDownloadStatus
 }
 const AppContext = createContext(initialAppContext)
 
 enum AppContextActionType {
-    setShowPlayer, setPodcast, setPlayTrackNo, setCachedPaths, setCachedPath
+    setShowPlayer, setPodcast, setPlayTrackNo, setCachedPaths, setCachedPath, setSound, setDownloadStatus
 }
 
 type AppContextActions =
@@ -40,7 +51,8 @@ type AppContextActions =
     | { type: AppContextActionType.setPlayTrackNo; trackNo: number }
     | { type: AppContextActionType.setCachedPaths; paths: string[] }
     | { type: AppContextActionType.setCachedPath; cashedInfo: { path: string, index: number } }
-
+    | { type: AppContextActionType.setSound; mediaInstance: Audio.Sound }
+    | { type: AppContextActionType.setDownloadStatus; downloadStatus: DownloadStatus }
 
 const AppContextReducer = (state: AppContextStatus, action: AppContextActions) => {
     switch (action.type) {
@@ -57,20 +69,45 @@ const AppContextReducer = (state: AppContextStatus, action: AppContextActions) =
             return { ...state, cachedPaths: tempCachedPaths}
         case AppContextActionType.setCachedPaths:
             return { ...state, cachedPaths: action.paths}
+        case AppContextActionType.setSound:
+            return { ...state, mediaInstance: action.mediaInstance }
+        case AppContextActionType.setDownloadStatus:
+            return { ...state, downloadStatus: action.downloadStatus }
         default:
             break;
     }
 }
 ``
+const searchFile = async (uid: string) => {
+    const gifDir = FileSystem.cacheDirectory + "adyen/";
+    const dirInfo = await FileSystem.getInfoAsync(gifDir);
+    if (!dirInfo.exists) {
+        await FileSystem.makeDirectoryAsync(gifDir, { intermediates: true });
+    }
+    const fileInfo = await FileSystem.getInfoAsync(
+        FileSystem.documentDirectory + uid + ".mp3"
+    );
+    return fileInfo.exists
+}
 export const AppContextProvider: React.FC = ({ children }) => {
     const [appState, dispatch] = useReducer(AppContextReducer, initialAppContext);
     const dispatchShowPlayer = (showPlayer: boolean) => {
         dispatch({ type: AppContextActionType.setShowPlayer, isPlayShow: showPlayer });
     }
 
-    const dispatchSetPodcast = (podcast: PodCast) => {
+    const dispatchSetPodcast = async (podcast: PodCast) => {
+        const promise = podcast.episodes.map(async (item,index) => {
+            item.isDownloaded = await searchFile(item.uid);
+            if (item.isDownloaded) {
+                item.cachedUrl = FileSystem.documentDirectory + item.uid + ".mp3"
+            }
+            podcast.episodes[index] = item
+        })
+        await Promise.race(promise)
         dispatch({ type: AppContextActionType.setPodcast, podcast: podcast });
     }
+    
+    
 
     const dispatchSetPlayEpisodeNo = (trackNo: number) => {
         dispatch({ type: AppContextActionType.setPlayTrackNo, trackNo: trackNo });
@@ -82,6 +119,14 @@ export const AppContextProvider: React.FC = ({ children }) => {
 
     const dispatchSetCachedPath = (path: string, index: number) => {
         dispatch({ type: AppContextActionType.setCachedPath, cashedInfo: { path: path, index: index } });
+    }
+
+    const dispatchSetMediaInstance = (sound:Audio.Sound) => {
+        dispatch({ type: AppContextActionType.setSound, mediaInstance: sound });
+    }
+
+    const dispatchSetDownloadStatus = (downloadStatus: DownloadStatus) => {
+        //dispatch({ type: AppContextActionType.setDownloadStatus, downloadStatus: downloadStatus });
     }
 
 
@@ -96,7 +141,11 @@ export const AppContextProvider: React.FC = ({ children }) => {
                 setPlayTrackNo: dispatchSetPlayEpisodeNo,
                 cachedPaths: appState.cachedPaths,
                 setCachedPaths: dispatchSetCachedPaths,
-                setCachedPath: dispatchSetCachedPath
+                setCachedPath: dispatchSetCachedPath,
+                mediaInstance:appState.mediaInstance,
+                setMediaInstance:dispatchSetMediaInstance,
+                downloadStatus: appState.downloadStatus,
+                setDownloadStatus: dispatchSetDownloadStatus
             }}
         >
             {children}

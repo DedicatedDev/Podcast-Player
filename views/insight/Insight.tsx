@@ -16,11 +16,13 @@ import {
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import { InsightHeaderViewModel, InsightViewModel } from './InsightViewModel';
 import { InsightHeader } from './InsightHeader'
-import { useRef } from 'react';
-import { Episode } from '../home/Model';
+import { useRef, useEffect } from 'react';
+import { Episode, PodCast } from '../home/Model';
 import { useAppContextStore } from '../../context/AppContext';
-
-
+import Icon from "react-native-dynamic-vector-icons";
+import * as FileSystem from "expo-file-system";
+import { useDownloadService } from '../../services/download/DownloadService';
+// import { useValidResService } from '../../services/download/VaildResource';
 const { diffClamp } = Animated;
 const headerHeight = 150 * 2;
 const screenHeight = Dimensions.get('screen').height;
@@ -29,12 +31,9 @@ const navbarHeight = screenHeight - windowHeight + StatusBar.currentHeight;
 
 
 const InsightScreen = ({ route, navigation }) => {
-
-    const { showPlayer, setShowPlayer, playTrackNo, setPlayTrackNo } = useAppContextStore()
-    const podcast: InsightViewModel = route.params;
-    const headerInfo: InsightHeaderViewModel = { title: podcast.title, showNotes: podcast.showNotes, artwork: podcast.artwork }
-
-
+    const { showPlayer, setShowPlayer, setPlayTrackNo } = useAppContextStore()
+    const { podcast } = useAppContextStore()
+    const headerInfo: InsightHeaderViewModel = { title: podcast?.title, showNotes: podcast?.short_description, artwork: podcast?.artwork }
     //animation part.
     const ref = useRef(null);
     const scrollY = useRef(new Animated.Value(0));
@@ -44,7 +43,7 @@ const InsightScreen = ({ route, navigation }) => {
         outputRange: [0, -headerHeight],
         extrapolate: "clamp"
     });
-
+    
     const translateYNumber = useRef();
     const handleScroll = Animated.event(
         [
@@ -72,19 +71,20 @@ const InsightScreen = ({ route, navigation }) => {
         }
     };
 
-    const getButton = (_item, index) => {
-        if (_item.isDownloading) {
-            return <ActivityIndicator size="small" color="#FFFFFF" />;
-        } else if (_item.isDownloaded) {
+    const getButton = (_item: Episode, index: number) => {
+        // if (_item.isDownloading) {
+        //     return <ActivityIndicator size="small" color="#FFFFFF" />;
+        // } else 
+        if (_item.isDownloaded) {
             return (
                 <TouchableOpacity>
-                    {/* <Ionicons name="cloud-done-outline" size={24} color="white" /> */}
+                    <Icon name="cloud-done-outline" size={24} color="white" type={'Ionicons'} />
                 </TouchableOpacity>
             );
         } else {
             return (
                 <TouchableOpacity>
-                    {/* <Ionicons name="cloud-outline" size={24} color="white" /> */}
+                    <Icon name="cloud-outline" size={24} color="white" type={'Ionicons'} />
                 </TouchableOpacity>
             );
         }
@@ -117,6 +117,7 @@ const InsightScreen = ({ route, navigation }) => {
     //     )
     // }
 
+
     const renderEpisode = (episode: Episode, index: number) => {
         return (
             <View style={styles.listItem}>
@@ -130,7 +131,7 @@ const InsightScreen = ({ route, navigation }) => {
                     <View style={{ width: "90%" }}>
                         <Text style={styles.listItemDuration}>{episode.duration}</Text>
                     </View>
-                    {/* <View style={{ width: "10%" }}>{getButton(prop, index)}</View> */}
+                    <View style={{ width: "10%" }}>{getButton(episode, index)}</View>
                 </View>
             </View>
         )
@@ -146,7 +147,7 @@ const InsightScreen = ({ route, navigation }) => {
                 // onScroll={handleScroll}
                 //ref={ref}
                 // onMomentumScrollEnd={handleSnap}
-                data={podcast.episodes}
+                data={podcast?.episodes}
                 renderItem={(item) => { return renderEpisode(item.item, item.index) }}
                 keyExtractor={(item, id) => id.toString()}
             >

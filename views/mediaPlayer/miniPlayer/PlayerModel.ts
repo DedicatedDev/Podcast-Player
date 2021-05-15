@@ -1,13 +1,13 @@
 import { Episode } from './../../home/Model';
 export interface PlayerModel{
     displayStyle:PlayDisplayMode,
-    isHidden:boolean,
-    isPlaying:boolean,
-    cachedPath:string[]|null,
+    isHidden:Boolean,
+    isPlaying:Boolean,
+    cachedPath:String[]|null,
     playlist:Episode[]|null,
     playSpeed:PlaySpeed,
-    playTime:number,
-    selectedTrack:number,
+    playTime:Number,
+    totalTime:Number,
 }
 
 export enum PlaySpeed{
@@ -20,7 +20,7 @@ export enum PlayDisplayMode {
     mini,full
 }
 
-export enum UserActionTypeToPlayer {
+export enum PlayerActionType {
     tappedPlayBtn,
     tappedExpandBtn,
     tappedForward,
@@ -30,16 +30,18 @@ export enum UserActionTypeToPlayer {
     changedVolume,
     changedPlaySpeed,
     changedVisible,
-    loadedNewTrack,
+    setPlayTime,
+    setTotalTime,
 }
 
-export type UserActionsToPlayer =
-    | { type: UserActionTypeToPlayer.tappedPlayBtn,isPlaying:boolean}
-    | { type: UserActionTypeToPlayer.tappedExpandBtn,displayMode:PlayDisplayMode}
-    | { type: UserActionTypeToPlayer.tappedBackward}
-    | { type: UserActionTypeToPlayer.tappedNext}
-    | { type: UserActionTypeToPlayer.tappedPrevious}
-    | { type: UserActionTypeToPlayer.changedVolume}
-    | { type: UserActionTypeToPlayer.changedPlaySpeed}
-    | { type: UserActionTypeToPlayer.changedVisible, isHidden:boolean}
-    | { type: UserActionTypeToPlayer.loadedNewTrack, trackNo:number}
+export type PlayerActions =
+    | { type: PlayerActionType.tappedPlayBtn,isPlaying:Boolean}
+    | { type: PlayerActionType.tappedExpandBtn,displayMode:PlayDisplayMode}
+    | { type: PlayerActionType.tappedBackward}
+    | { type: PlayerActionType.tappedNext}
+    | { type: PlayerActionType.tappedPrevious}
+    | { type: PlayerActionType.changedVolume}
+    | { type: PlayerActionType.changedPlaySpeed}
+    | { type: PlayerActionType.changedVisible, isHidden:Boolean}
+    | { type: PlayerActionType.setPlayTime, playTime:Number}
+    | { type: PlayerActionType.setTotalTime, totalTime:Number}

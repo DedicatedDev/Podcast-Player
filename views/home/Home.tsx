@@ -1,12 +1,13 @@
 import * as React from 'react';
 import { View, Image, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
-import { EndPoint } from '../../services/network/endpoint';
-import { HttpMethod } from '../../services/network/http_methods';
-import { useNetworkService } from '../../services/network/networkService';
+import { EndPoint } from '../../services/network/Endpoint';
+import { HttpMethod } from '../../services/network/Http_methods';
+import { useNetworkService } from '../../services/network/NetworkService';
 import { PodCast } from './Model';
 import { InsightViewModel } from '../insight/InsightViewModel'
 import { useAppContextStore } from '../../context/AppContext';
 import { useEffect } from 'react';
+import * as FileSystem from "expo-file-system";
 
 const HomeScreen = ({ navigation }) => {
 
@@ -15,23 +16,17 @@ const HomeScreen = ({ navigation }) => {
     return endpoint.url();
   };
   const { data } = useNetworkService<PodCast[]>(configUrl(), HttpMethod.get, null);
-  const { setShowPlayer, setPodcast } = useAppContextStore()
+  const {setPodcast } = useAppContextStore()
 
+  
 
   const renderPodCast = (item) => (
     <TouchableOpacity
       style={styles.listitem}
       onPress={() => {
-        const selectedItem = item.item;
-        const insightData: InsightViewModel = {
-          id: selectedItem.id,
-          artwork: selectedItem.artwork,
-          showNotes: selectedItem.short_description,
-          title: selectedItem.title,
-          episodes: selectedItem.episodes
-        };
+        let selectedItem:PodCast = item.item;
         setPodcast(selectedItem)
-        return navigation.navigate("Insight", insightData)
+        return navigation.navigate("Insight")
       }}
 
     >
@@ -49,7 +44,7 @@ const HomeScreen = ({ navigation }) => {
             modifiedItem.episodes.forEach((episode) => {
               var uid =
                 episode.podcast_id.toString() + "-" + episode.id.toString();
-              var newEpisode = { ...episode, uid: uid };
+              var newEpisode = { ...episode, uid: uid};
               newEpisodes.push(newEpisode);
             });
           modifiedItem.episodes = newEpisodes;

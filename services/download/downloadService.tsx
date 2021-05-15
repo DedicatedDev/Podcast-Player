@@ -6,19 +6,19 @@ import { Episode } from '../../views/home/Model';
 import { useState, useMemo, useEffect } from 'react';
 import { DownloadProgress, DownloadStatus, initialDownloadStatus } from './DownloadModel';
 
-export const useDownloadService = (index: number) => {
-
-    const { podcast } = useAppContextStore();
-    const [state, setState] = useState<DownloadStatus>(initialDownloadStatus)
+export const useDownloadService = () => {
+    const { podcast, playTrackNo, downloadStatus, setPodcast} = useAppContextStore();
+    const [state, setState] = useState<DownloadStatus>(downloadStatus)
     useEffect(() => {
-        if (podcast && podcast) {
-            downloadFile(podcast.episodes[index])
-        } else {
-            setState({ ...state, progressStatus: DownloadProgress.downloadImpossible })
+        if(podcast && podcast){
+            downloadFile(podcast.episodes[playTrackNo], playTrackNo)
         }
-    }, [index])
+        return () =>{
+          //  setState(initialDownloadStatus)
+        }
+    }, [playTrackNo])
 
-    const downloadFile = async (item: Episode) => {
+    const downloadFile = async (item: Episode,index:number) => {
         const gifDir = FileSystem.cacheDirectory + "adyen/";
         const dirInfo = await FileSystem.getInfoAsync(gifDir);
         if (!dirInfo.exists) {
@@ -38,13 +38,22 @@ export const useDownloadService = (index: number) => {
                 (progress) => downloadCallback(progress)
             );
             await downloadResumable.downloadAsync();
-            console.log("finished")
+            const cachedPath = FileSystem.documentDirectory + podcast.episodes[index].uid + ".mp3"
+            setState({ ...state, progressStatus: DownloadProgress.downloaded, cachedPath: cachedPath, trackNo:index})
+            let newEpisodes = podcast.episodes;
+            newEpisodes[index].isDownloaded = true;
+            newEpisodes[index].cachedUrl = cachedPath;
+            setPodcast({...podcast, episodes:newEpisodes})
         } else {
+            
             const cachedPath = FileSystem.documentDirectory + item.uid + ".mp3"
-            setState({ ...state, progressStatus: DownloadProgress.downloaded, cachedPath: cachedPath })
+            setState({ ...state, progressStatus: DownloadProgress.downloaded, cachedPath: cachedPath, trackNo:index})
+            let newEpisodes = podcast.episodes;
+            newEpisodes[index].isDownloaded = true;
+            newEpisodes[index].cachedUrl = cachedPath;
+            setPodcast({ ...podcast, episodes: newEpisodes })
         };
     }
-
 
     // const onDownloaded = useCallback(
     //     async (index) => {
@@ -77,22 +86,17 @@ export const useDownloadService = (index: number) => {
 
     const downloadCallback =
         async (downloadProgress:FileSystem.DownloadProgressData) => {
-      
             const progress =
                 downloadProgress.totalBytesWritten /
                 downloadProgress.totalBytesExpectedToWrite;
 
             if (progress < 1) {
-                console.log(progress)
                 if (state.downloadProgress != DownloadProgress.downloading) {
                     setState({ ...state, progressStatus: DownloadProgress.downloading })
-                } else {
-                    const cachedPath = FileSystem.documentDirectory + podcast.episodes[index].uid + ".mp3"
-                    setState({ ...state, progressStatus: DownloadProgress.downloaded, cachedPath: cachedPath })
-                }
+                } 
             } else {
-                const cachedPath = FileSystem.documentDirectory + podcast.episodes[index].uid + ".mp3"
-                setState({ ...state, progressStatus: DownloadProgress.downloaded, cachedPath: cachedPath })
+                const cachedPath = FileSystem.documentDirectory + podcast.episodes[playTrackNo].uid + ".mp3"
+                setState({ ...state, progressStatus: DownloadProgress.downloaded, cachedPath: cachedPath }) 
             }
         };
 
@@ -112,6 +116,5 @@ export const useDownloadService = (index: number) => {
     //     [data, setData]
     // );
 
-    return { downloadStatus: state, index: index }
-
+    return { downloadStatus: state,downloadFile}
 }

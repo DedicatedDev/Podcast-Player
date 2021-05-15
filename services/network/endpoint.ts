@@ -1,4 +1,4 @@
-import {SSLSchema} from './http_methods';
+import {SSLSchema} from './Http_methods';
 
 export interface EndpointProtocol {
   schema?: SSLSchema;

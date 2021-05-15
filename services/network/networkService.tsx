@@ -1,7 +1,7 @@
 import axios from 'axios';
 import {useEffect, useState} from 'react';
 import { useAppContextStore } from '../../context/AppContext';
-import {HttpMethod} from './http_methods';
+import {HttpMethod} from './Http_methods';
 
 interface NetRes<T>{
   data:T,
