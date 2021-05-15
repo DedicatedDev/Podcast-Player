@@ -19,6 +19,8 @@ export interface PodCast{
 
 export interface Episode {
     id: number,
+    uid:string,
+    isDownloaded:boolean,
     podcast_id: number,
     title:string|null,
     sub_title: string|null,

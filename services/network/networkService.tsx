@@ -25,7 +25,6 @@ export function useNetworkService<T>(
       timeout: 1000,
       headers: headers,
     });
-    console.log(method);
     switch (method) {
       case HttpMethod.get:
         instance
@@ -36,7 +35,7 @@ export function useNetworkService<T>(
             setRes({data: res, isLoading: false, error: null});
           })
           .catch(err => {
-            console.log(err);
+
             setRes({data: null, isLoading: false, error: err});
           });
         break;
@@ -49,7 +48,6 @@ export function useNetworkService<T>(
             setRes({data: res, isLoading: false, error: null});
           })
           .catch(err => {
-            console.log(err);
             setRes({data: null, isLoading: false, error: err});
           });
         break;
@@ -62,7 +60,7 @@ export function useNetworkService<T>(
             setRes({data: res, isLoading: false, error: null});
           })
           .catch(err => {
-            console.log(err);
+
             setRes({data: null, isLoading: false, error: err});
           });
         break;

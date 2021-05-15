@@ -50,7 +50,7 @@ const AppContextReducer = (state: AppContextStatus, action: AppContextActions) =
         case AppContextActionType.setPodcast:
             return { ...state, podcast: action.podcast }
         case AppContextActionType.setPlayTrackNo:
-            return { ...state, trackNo: action.trackNo }
+            return { ...state, playTrackNo: action.trackNo }
         case AppContextActionType.setCachedPath:
             var tempCachedPaths = state.cachedPaths;
             tempCachedPaths[action.cashedInfo.index] = action.cashedInfo.path
@@ -69,7 +69,6 @@ export const AppContextProvider: React.FC = ({ children }) => {
     }
 
     const dispatchSetPodcast = (podcast: PodCast) => {
-        console.log(podcast)
         dispatch({ type: AppContextActionType.setPodcast, podcast: podcast });
     }
 

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useEffect, useReducer, useMemo} from 'react';
+import { useEffect, useReducer, useMemo } from 'react';
 import {
     View,
     TouchableOpacity,
@@ -12,10 +12,11 @@ import {
     Slider
 } from 'react-native'
 import Icon from "react-native-dynamic-vector-icons";
-//import Icon from 'react-native-vector-icons';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import { useAppContextStore } from '../../../context/AppContext';
+import { useDownloadService } from '../../../services/download/DownloadService';
 import { PlayDisplayMode, PlayerModel, PlaySpeed, UserActionsToPlayer, UserActionTypeToPlayer } from './PlayerModel'
+import AudioPlayer from 'react-native-play-audio';
 
 const ICON_SIZE = 40;
 const { width: DEVICE_WIDTH } = Dimensions.get("window");
@@ -23,6 +24,8 @@ const BACKGROUND_COLOR = "#000000";
 const FONT_SIZE = 14;
 
 const MiniPlayer = () => {
+
+    
     //reducer 
     const ManagePlayer = (state: PlayerModel, action: UserActionsToPlayer) => {
         switch (action.type) {
@@ -33,32 +36,30 @@ const MiniPlayer = () => {
             case UserActionTypeToPlayer.tappedPlayBtn:
                 return { ...state, isPlaying: state.isPlaying = !action.isPlaying }
             case UserActionTypeToPlayer.loadedNewTrack:
-                return { ...state, selectedTrack:action.trackNo}
+                return { ...state, selectedTrack: action.trackNo }
             default:
                 break;
         }
     }
 
     //define state 
-    const { podcast} = useAppContextStore();
-    const { showPlayer, playTrackNo } = useAppContextStore();
-
-    console.log(podcast)
+    const { podcast, showPlayer, playTrackNo } = useAppContextStore();
     const initState: PlayerModel = {
         displayStyle: PlayDisplayMode.mini,
         isHidden: showPlayer,
         isPlaying: false,
         cachedPath: [],
-        playlist: podcast&&podcast.episodes,
+        playlist: podcast && podcast.episodes,
         playSpeed: PlaySpeed.normal,
         playTime: 0.0,
         selectedTrack: 0,
     };
 
-
     const [state, dispatch] = useReducer(ManagePlayer, initState);
-
+    const { downloadStatus } = useDownloadService(playTrackNo);
+    
     //visible/hidden manage
+    
     useMemo(() => {
         dispatch({ type: UserActionTypeToPlayer.changedVisible, isHidden: showPlayer })
         return () => {
@@ -67,7 +68,7 @@ const MiniPlayer = () => {
     }, [showPlayer])
 
     useMemo(() => {
-        dispatch({ type: UserActionTypeToPlayer.loadedNewTrack, trackNo: playTrackNo})
+        dispatch({ type: UserActionTypeToPlayer.loadedNewTrack, trackNo: playTrackNo })
         return () => {
             state.isHidden = true
         }

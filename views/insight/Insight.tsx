@@ -20,6 +20,7 @@ import { useRef } from 'react';
 import { Episode } from '../home/Model';
 import { useAppContextStore } from '../../context/AppContext';
 
+
 const { diffClamp } = Animated;
 const headerHeight = 150 * 2;
 const screenHeight = Dimensions.get('screen').height;
@@ -29,10 +30,10 @@ const navbarHeight = screenHeight - windowHeight + StatusBar.currentHeight;
 
 const InsightScreen = ({ route, navigation }) => {
 
-    const { showPlayer, setShowPlayer, playTrackNo ,setPlayTrackNo} = useAppContextStore()
+    const { showPlayer, setShowPlayer, playTrackNo, setPlayTrackNo } = useAppContextStore()
     const podcast: InsightViewModel = route.params;
     const headerInfo: InsightHeaderViewModel = { title: podcast.title, showNotes: podcast.showNotes, artwork: podcast.artwork }
-    
+
 
     //animation part.
     const ref = useRef(null);
@@ -45,10 +46,6 @@ const InsightScreen = ({ route, navigation }) => {
     });
 
     const translateYNumber = useRef();
-
- 
-
-
     const handleScroll = Animated.event(
         [
             {
@@ -67,7 +64,6 @@ const InsightScreen = ({ route, navigation }) => {
 
     const handleSnap = ({ nativeEvent }) => {
         const offsetY = nativeEvent.contentOffset.y;
-        console.log(offsetY);
         if (ref.current) {
             ref.current.scrollToOffset({
                 offset:
@@ -94,12 +90,10 @@ const InsightScreen = ({ route, navigation }) => {
         }
     };
     const onPressItem = (index: number) => {
-        if(!showPlayer){
+        if (!showPlayer) {
             setShowPlayer(true);
         }
-        if(playTrackNo != index && index < podcast.episodes.length){
-            setPlayTrackNo(index)
-        }
+        setPlayTrackNo(index)
     }
     // const renderEpisodes = () => {
     //     return (
