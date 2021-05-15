@@ -7,23 +7,21 @@
  */
 
 import * as React from 'react';
-import {DarkTheme, NavigationContainer} from '@react-navigation/native';
-import {createStackNavigator} from '@react-navigation/stack';
-import { MainStackNavigator } from './navigation/StackNavigation'
-import {HomeScreen} from './views/home/Home';
-import {InsightScreen} from './views/insight/Insight';
-import LoginScreen from './views/auth/Login';
-import { StatusBar } from 'react-native';
+import { DarkTheme, NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
 import { navigationRef } from './navigation/RootNavigation';
+import AppNavigator from './navigation/AppNavigator';
+import { MiniPlayer } from './views/mediaPlayer/miniPlayer/MiniPlayer';
+import { useState, useEffect} from 'react';
+import { AppContextProvider, useAppContextStore } from './context/AppContext'
 const Stack = createStackNavigator();
 const App = () => {
-  //const scheme = useColorScheme();
   return (
     <NavigationContainer ref={navigationRef} theme={DarkTheme}>
-      <Stack.Navigator initialRouteName="Show">
-        <Stack.Screen name="Show" component={HomeScreen} />
-        <Stack.Screen name="Insight" component={InsightScreen}/>
-      </Stack.Navigator>
+      <AppContextProvider>
+        <AppNavigator />
+        <MiniPlayer />
+      </AppContextProvider>
     </NavigationContainer>
   );
 };

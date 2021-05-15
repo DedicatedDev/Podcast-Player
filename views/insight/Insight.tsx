@@ -18,7 +18,7 @@ import { InsightHeaderViewModel, InsightViewModel } from './InsightViewModel';
 import { InsightHeader } from './InsightHeader'
 import { useRef } from 'react';
 import { Episode } from '../home/Model';
-
+import { useAppContextStore } from '../../context/AppContext';
 
 const { diffClamp } = Animated;
 const headerHeight = 150 * 2;
@@ -29,8 +29,10 @@ const navbarHeight = screenHeight - windowHeight + StatusBar.currentHeight;
 
 const InsightScreen = ({ route, navigation }) => {
 
+    const { showPlayer, setShowPlayer, playTrackNo ,setPlayTrackNo} = useAppContextStore()
     const podcast: InsightViewModel = route.params;
     const headerInfo: InsightHeaderViewModel = { title: podcast.title, showNotes: podcast.showNotes, artwork: podcast.artwork }
+    
 
     //animation part.
     const ref = useRef(null);
@@ -39,14 +41,12 @@ const InsightScreen = ({ route, navigation }) => {
     const translateY = scrollYClamped.interpolate({
         inputRange: [0, headerHeight],
         outputRange: [0, -headerHeight],
-        extrapolate:"clamp"
+        extrapolate: "clamp"
     });
 
     const translateYNumber = useRef();
 
-    // translateY.addListener(({ value }) => {
-    //     translateYNumber.current = value;
-    // });
+ 
 
 
     const handleScroll = Animated.event(
@@ -94,7 +94,12 @@ const InsightScreen = ({ route, navigation }) => {
         }
     };
     const onPressItem = (index: number) => {
-
+        if(!showPlayer){
+            setShowPlayer(true);
+        }
+        if(playTrackNo != index && index < podcast.episodes.length){
+            setPlayTrackNo(index)
+        }
     }
     // const renderEpisodes = () => {
     //     return (
@@ -117,11 +122,14 @@ const InsightScreen = ({ route, navigation }) => {
     //         </View>
     //     )
     // }
-    
-    const renderEpisode = (episode:Episode,index:number) => {
+
+    const renderEpisode = (episode: Episode, index: number) => {
         return (
             <View style={styles.listItem}>
-                <TouchableOpacity>
+                <TouchableOpacity
+                    onPress={() => {
+                        return onPressItem(index);
+                    }}>
                     <Text style={styles.listItemText}>{episode.title}</Text>
                 </TouchableOpacity>
                 <View style={{ flexDirection: "row" }}>
@@ -140,12 +148,12 @@ const InsightScreen = ({ route, navigation }) => {
             <InsightHeader model={headerInfo} height={headerHeight} />
             <FlatList
                 //scrollEventThrottle={16}
-               // contentContainerStyle={{ paddingTop: headerHeight+navbarHeight}}
-               // onScroll={handleScroll}
+                // contentContainerStyle={{ paddingTop: headerHeight+navbarHeight}}
+                // onScroll={handleScroll}
                 //ref={ref}
-               // onMomentumScrollEnd={handleSnap}
+                // onMomentumScrollEnd={handleSnap}
                 data={podcast.episodes}
-                renderItem={(item) => {return renderEpisode(item.item,item.index)}}
+                renderItem={(item) => { return renderEpisode(item.item, item.index) }}
                 keyExtractor={(item, id) => id.toString()}
             >
 

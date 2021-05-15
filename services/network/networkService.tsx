@@ -1,5 +1,6 @@
 import axios from 'axios';
 import {useEffect, useState} from 'react';
+import { useAppContextStore } from '../../context/AppContext';
 import {HttpMethod} from './http_methods';
 
 interface NetRes<T>{
@@ -15,6 +16,7 @@ export function useNetworkService<T>(
 ){
   const initValue:NetRes<T> = {data:null, error:null , isLoading: false};
   const [res, setRes] = useState<NetRes<T>>(initValue);
+  
 //  Network here.
   useEffect(() => {
     setRes(prevState => ({...prevState, isLoading: true}));
@@ -71,5 +73,6 @@ export function useNetworkService<T>(
       console.log("finish");
     }
   }, []);
+ 
   return res;
 };

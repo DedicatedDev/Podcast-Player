@@ -11,138 +11,23 @@ import { createStackNavigator } from '@react-navigation/stack'
 // import Profile from '../components/Profile'
 
 import * as RootNavigation from '../navigation/RootNavigation'
-import HomeScreen from '../views/home/Home'
+import {HomeScreen} from '../views/home/Home'
 import { Button } from 'react-native-paper'
+import { InsightScreen } from '../views/insight/Insight'
 
 const { width: DEVICE_WIDTH } = Dimensions.get('window')
 const Stack = createStackNavigator()
 
-const AuthNavigator = () => {
+const AppNavigator = () => {
   return (
     <Stack.Navigator initialRouteName='Inwoven'>
-      <Stack.Screen
-        name='Mijn Shows'
-        component={HomeScreen}
-        options={{
-          headerTitle: "Shows",
-          headerStyle: {
-            backgroundColor: '#333333',
-          },
-          headerTintColor: '#fff',
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
-        //   headerRight: () => (
-            
-        //   ),
-        }}
-      />
-      {/* <Stack.Screen
-        name='Insight'
-        component={Insight}
-        options={{
-          headerTitle: '',
-          headerStyle: {
-            backgroundColor: '#333333',
-          },
-          headerTintColor: '#fff',
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
-          headerRight: () => (
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-              <Ionicons
-                name='md-menu'
-                style={{ paddingRight: 5 }}
-                size={40}
-                color='white'
-                onPress={() => RootNavigation.navigate('Menu')}
-              />
-            </View>
-          ),
-        }}
-      />
-      <Stack.Screen
-        name='About'
-        component={About}
-        options={{
-          headerTitle: 'Over ons',
-          headerStyle: {
-            backgroundColor: '#333333',
-          },
-          headerTintColor: '#fff',
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
-        }}
-      />
-      <Stack.Screen
-        name='Profile'
-        component={Profile}
-        options={{
-          headerTitle: 'Mijn gegevens',
-          headerStyle: {
-            backgroundColor: '#333333',
-          },
-          headerTintColor: '#fff',
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
-        }}
-      />
-      <Stack.Screen
-        name='Menu'
-        component={Menu}
-        options={{
-          headerBackTitle: 'Vorige',
-          headerStyle: {
-            backgroundColor: '#333333',
-          },
-          headerTintColor: '#fff',
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
-        }}
-      />
-      <Stack.Screen
-        name='Player'
-        component={Player}
-        options={{
-          headerBackTitle: 'Vorige',
-          headerTitle: (
-            <Image
-              style={{ width: 40, height: 30 }}
-              source={require('../assets/header-icon-white.png')}
-            />
-          ),
-          headerStyle: {
-            backgroundColor: '#333333',
-          },
-          headerTintColor: '#fff',
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
-          headerRight: () => (
-            <Ionicons
-              name='md-menu'
-              style={{ paddingRight: 5 }}
-              size={40}
-              color='white'
-              onPress={() => RootNavigation.navigate('Menu')}
-            />
-          ),
-        }}
-      /> */}
+      <Stack.Screen name="Show" component={HomeScreen} />
+      <Stack.Screen name="Insight" component={InsightScreen} />
     </Stack.Navigator>
   )
 }
 
-AuthNavigator.propTypes = {}
-AuthNavigator.defaultProps = {}
+// AuthNavigator.propTypes = {}
+// AuthNavigator.defaultProps = {}
 
-export default AuthNavigator
+export default AppNavigator
