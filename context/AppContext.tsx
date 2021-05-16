@@ -2,7 +2,7 @@ import * as React from 'react'
 import { createContext, useReducer, useContext } from 'react'
 import { act } from 'react-test-renderer'
 import { PodCast } from '../views/home/Model'
-import { Audio} from "expo-av";
+import { Audio } from "expo-av";
 import { DownloadStatus, initialDownloadStatus } from '../services/download/DownloadModel';
 import * as FileSystem from "expo-file-system";
 
@@ -11,7 +11,7 @@ interface AppContextStatus {
     setShowPlayer: (showPlayer: boolean) => void,
     podcast: PodCast,
     setPodcast: (podcast: PodCast) => void,
-    playTrackNo: number|null,
+    playTrackNo: number | null,
     setPlayTrackNo: (playTrackNo: number) => void,
     cachedPaths: string[],
     setCachedPaths: (cachedPaths: string[]) => void,
@@ -20,8 +20,9 @@ interface AppContextStatus {
     setMediaInstance: (mediaInstance: Audio.Sound) => void
 
     downloadStatus: DownloadStatus,
-    setDownloadStatus:(downloadStatus:DownloadStatus) => void
+    setDownloadStatus: (downloadStatus: DownloadStatus) => void
 }
+
 
 
 const initialAppContext: AppContextStatus = {
@@ -36,8 +37,8 @@ const initialAppContext: AppContextStatus = {
     setCachedPath: () => [],
     mediaInstance:null,
     setMediaInstance: () => null,
-    downloadStatus:initialDownloadStatus,
-    setDownloadStatus:() => initialDownloadStatus
+    downloadStatus: initialDownloadStatus,
+    setDownloadStatus: () => initialDownloadStatus
 }
 const AppContext = createContext(initialAppContext)
 
@@ -66,9 +67,9 @@ const AppContextReducer = (state: AppContextStatus, action: AppContextActions) =
         case AppContextActionType.setCachedPath:
             var tempCachedPaths = state.cachedPaths;
             tempCachedPaths[action.cashedInfo.index] = action.cashedInfo.path
-            return { ...state, cachedPaths: tempCachedPaths}
+            return { ...state, cachedPaths: tempCachedPaths }
         case AppContextActionType.setCachedPaths:
-            return { ...state, cachedPaths: action.paths}
+            return { ...state, cachedPaths: action.paths }
         case AppContextActionType.setSound:
             return { ...state, mediaInstance: action.mediaInstance }
         case AppContextActionType.setDownloadStatus:
@@ -77,7 +78,7 @@ const AppContextReducer = (state: AppContextStatus, action: AppContextActions) =
             break;
     }
 }
-``
+
 const searchFile = async (uid: string) => {
     const gifDir = FileSystem.cacheDirectory + "adyen/";
     const dirInfo = await FileSystem.getInfoAsync(gifDir);
@@ -96,7 +97,7 @@ export const AppContextProvider: React.FC = ({ children }) => {
     }
 
     const dispatchSetPodcast = async (podcast: PodCast) => {
-        const promise = podcast.episodes.map(async (item,index) => {
+        const promise = podcast.episodes.map(async (item, index) => {
             item.isDownloaded = await searchFile(item.uid);
             if (item.isDownloaded) {
                 item.cachedUrl = FileSystem.documentDirectory + item.uid + ".mp3"
@@ -106,8 +107,8 @@ export const AppContextProvider: React.FC = ({ children }) => {
         await Promise.race(promise)
         dispatch({ type: AppContextActionType.setPodcast, podcast: podcast });
     }
-    
-    
+
+
 
     const dispatchSetPlayEpisodeNo = (trackNo: number) => {
         dispatch({ type: AppContextActionType.setPlayTrackNo, trackNo: trackNo });
@@ -121,7 +122,7 @@ export const AppContextProvider: React.FC = ({ children }) => {
         dispatch({ type: AppContextActionType.setCachedPath, cashedInfo: { path: path, index: index } });
     }
 
-    const dispatchSetMediaInstance = (sound:Audio.Sound) => {
+    const dispatchSetMediaInstance = (sound: Audio.Sound) => {
         dispatch({ type: AppContextActionType.setSound, mediaInstance: sound });
     }
 
@@ -142,8 +143,8 @@ export const AppContextProvider: React.FC = ({ children }) => {
                 cachedPaths: appState.cachedPaths,
                 setCachedPaths: dispatchSetCachedPaths,
                 setCachedPath: dispatchSetCachedPath,
-                mediaInstance:appState.mediaInstance,
-                setMediaInstance:dispatchSetMediaInstance,
+                mediaInstance: appState.mediaInstance,
+                setMediaInstance: dispatchSetMediaInstance,
                 downloadStatus: appState.downloadStatus,
                 setDownloadStatus: dispatchSetDownloadStatus
             }}

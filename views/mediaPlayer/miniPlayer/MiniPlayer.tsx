@@ -15,7 +15,7 @@ import Icon from "react-native-dynamic-vector-icons";
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import { useAppContextStore } from '../../../context/AppContext';
 import { useDownloadService } from '../../../services/download/DownloadService';
-import { PlayDisplayMode, PlayerModel, PlaySpeed, PlayerActions, PlayerActionType } from './PlayerModel'
+import { PlayDisplayMode, PlayerModel, PlaySpeed, PlayerActions, PlayerActionType, PlayState } from './PlayerModel'
 import { Audio, AVPlaybackStatusToSet } from "expo-av";
 import { AVPlaybackSource, AVPlaybackStatus } from 'expo-av/build/AV';
 import { Sound } from 'expo-av/build/Audio';
@@ -38,13 +38,17 @@ const MiniPlayer = () => {
             case PlayerActionType.changedVisible:
                 return { ...state, isHidden: state.isHidden = !showPlayer }
             case PlayerActionType.tappedPlayBtn:
-                return { ...state, isPlaying: state.isPlaying = !action.isPlaying }
-            // case PlayerActionType.loadedNewTrack:
-            //     return { ...state, selectedTrack: action.trackNo }
+                console.log("this is working?")
+                console.log(action.playStatus)
+                return { ...state, playState: action.playStatus }
+            case PlayerActionType.loadNewItem:
+                return { ...state, playState: PlayState.loading }
             case PlayerActionType.setPlayTime:
                 return { ...state, playTime: action.playTime }
             case PlayerActionType.setTotalTime:
                 return { ...state, totalTime: action.totalTime }
+            case PlayerActionType.setCachedPath:
+                return { ...state, cachedPath: action.cachedPath }
             default:
                 break;
         }
@@ -55,23 +59,17 @@ const MiniPlayer = () => {
     const initState: PlayerModel = {
         displayStyle: PlayDisplayMode.mini,
         isHidden: showPlayer,
-        isPlaying: false,
-        cachedPath: [],
+        playState: PlayState.loading,
+        cachedPath: null,
         playlist: podcast && podcast.episodes,
         playSpeed: PlaySpeed.normal,
         playTime: 0.0,
         totalTime: 0.0,
     };
-    const playSound = async (uri: string) => {
 
-        if (!state.isPlaying) {
-            _setNewMediaInstance(uri)
-        } else {
-            await mediaInstance?.unloadAsync()
-            _setNewMediaInstance(uri)
-        }
-    }
+
     const _setNewMediaInstance = async (uri: string) => {
+        await mediaInstance?.unloadAsync()
         const initialStatus: AVPlaybackStatusToSet = {
             shouldPlay: true,
             rate: 1.0,
@@ -90,71 +88,94 @@ const MiniPlayer = () => {
     }
 
     const _onPlaybackStatusUpdate = (status: AVPlaybackStatus) => {
-        // 
         if (status.isLoaded && status.isPlaying) {
-            if (!state.isPlaying) {
-                dispatch({ type: PlayerActionType.tappedPlayBtn, isPlaying: true })
-            }
             if (state.totalTime != status.durationMillis) {
                 dispatch({ type: PlayerActionType.setTotalTime, totalTime: status.durationMillis })
             }
             dispatch({ type: PlayerActionType.setPlayTime, playTime: status.positionMillis })
-        } else {
-            dispatch({ type: PlayerActionType.tappedPlayBtn, isPlaying: false })
-        }
+        } 
     }
 
     const [state, dispatch] = useReducer(ManagePlayer, initState);
     const { downloadStatus } = useDownloadService()
-    useMemo(async () => {
-        const cachedPath = downloadStatus.cachedPath
-        console.log(cachedPath)
-        if (playTrackNo == downloadStatus.trackNo && cachedPath != null) {
-            playSound(cachedPath)
-        } else {
-            await mediaInstance?.unloadAsync()
-            dispatch({ type: PlayerActionType.tappedPlayBtn, isPlaying: null })
-        }
-    }, [playTrackNo, downloadStatus])
 
     // useMemo(async() => {
-    //     if(state.isPlaying == null){
-    //        await mediaInstance?.unloadAsync()
-    //     }else if(!state.isPlaying){
-    //         await mediaInstance?.playAsync()
-    //     }else{
-    //        await mediaInstance?.pauseAsync()
+    //     console.log(state.playState)
+    //     switch (state.playState) {
+    //         case PlayState.loading:
+    //             console.log("loading")
+    //            await mediaInstance?.unloadAsync()
+    //             break;
+    //         case PlayState.play:
+    //             await mediaInstance?.playAsync()
+    //             break;
+    //         case PlayState.stop:
+    //             await mediaInstance?.stopAsync()
+    //             break;
+    //         default:
+    //             break;
     //     }
-    // }, [state.isPlaying])
+    // }, [state.playState])
 
-    //console.log(playTrackNo)
-    //const { downloadStatus } = useDownloadService()
-    // useMemo(() => {
-    //     setDownloadStatus(downloadStatus)
-    //     if (downloadStatus.progressStatus == DownloadProgress.downloaded) {
-    //         playSound(downloadStatus.cachedPath)
-    //     }
-    // }, [downloadStatus])
+    useEffect(() => {
+        dispatch({ type: PlayerActionType.loadNewItem });
+        const cachedPath = podcast?.episodes[playTrackNo].cachedUrl;
+        mediaInstance?.unloadAsync()
+        if (cachedPath != null) {
+            _setNewMediaInstance(cachedPath)
+            console.log(state.playState)
+            dispatch({ type: PlayerActionType.tappedPlayBtn, playStatus: PlayState.play });
+        }
+    }, [playTrackNo])
 
-    // useMemo(() => {
-    //     dispatch({ type: PlayerActionType.changedVisible, isHidden: showPlayer })
-    //     return () => {
-    //         state.isHidden = true
-    //     }
-    // }, [showPlayer])
+    useMemo(async () => {
+        if (downloadStatus.progressStatus == DownloadProgress.downloaded && playTrackNo == downloadStatus.trackNo) {
+            const cachedPath = downloadStatus.cachedPath;
+            await _setNewMediaInstance(cachedPath)
+            dispatch({ type: PlayerActionType.setCachedPath, cachedPath: cachedPath });
+            dispatch({ type: PlayerActionType.tappedPlayBtn, playStatus: PlayState.play });
+        }
+    }, [downloadStatus.progressStatus])
 
-    // useMemo(() => {
-    //     dispatch({ type: PlayerActionType.loadedNewTrack, trackNo: playTrackNo })
-    //     return () => {
-    //         state.isHidden = true
-    //     }
-    // }, [playTrackNo])
+    useMemo(() => {
+        dispatch({ type: PlayerActionType.changedVisible, isHidden: showPlayer })
+        return () => {
+            state.isHidden = true
+        }
+    }, [showPlayer])
 
+     const renderPlayStatus = () => {
+   
+        switch (state.playState) {
+            case PlayState.loading:
+                return 'Loading...'
+                break;
+            case PlayState.stop:
+                return `${state.playTime?.getMediaPlayTimeStamp()}/${state.totalTime?.getMediaPlayTimeStamp()}`
+                break;
+            case PlayState.play:
+                return `${state.playTime?.getMediaPlayTimeStamp()}/${state.totalTime?.getMediaPlayTimeStamp()}`
+                break;
+            default:
+                return "Buffering"
+                break;
+        }
+     }
 
-
-    // useMemo(async () => {
-    //     state.isPlaying ? await mediaInstance?.stopAsync() : await mediaInstance?.playAsync()
-    // }, [state.isPlaying])
+    const handlePlayButton = async() => {
+        switch (state.playState) {
+            case PlayState.play:
+                await mediaInstance?.pauseAsync()
+                dispatch({ type: PlayerActionType.tappedPlayBtn, playStatus: PlayState.stop })
+                break;
+            case PlayState.stop:
+                 await mediaInstance?.playAsync()
+                 dispatch({ type: PlayerActionType.tappedPlayBtn, playStatus: PlayState.play })
+                 break;
+            default:
+                break;
+        }
+    }
 
     return (
         <View style={[styles.playerContainer, { display: state.isHidden ? 'none' : 'flex' }]}>
@@ -163,35 +184,26 @@ const MiniPlayer = () => {
                     onPress={() => dispatch({ type: PlayerActionType.tappedExpandBtn, displayMode: state.displayStyle })}
                 >
                     <Icon
-                        name={state.displayStyle ? "keyboard-arrow-down" : "keyboard-arrow-up"}
+                        name={state.displayStyle == PlayDisplayMode.full ? "keyboard-arrow-down" : "keyboard-arrow-up"}
                         size={ICON_SIZE}
                         type={'MaterialIcons'}
                         color="#ffffff"
                     />
                 </TouchableOpacity>
                 <View style={styles.titleContainer}>
-                    <Text style={styles.title} numberOfLines={1}>{state.isPlaying == null ? "loading..." : `${state.playTime.getMediaPlayTimeStamp()}/${state.totalTime.getMediaPlayTimeStamp()}`}</Text>
+                    <Text style={styles.title} numberOfLines={1}>{renderPlayStatus()}</Text>
                 </View>
                 <TouchableOpacity
                     style={styles.playPauseButton}
                     disabled={false}
-                    onPress={async () => {
-                        if (state.isPlaying == null) {
-                            await mediaInstance?.unloadAsync()
-                        } else if (state) {
-                            await mediaInstance?.pauseAsync()
-                        } else {
-                            await mediaInstance?.playAsync()
-                        }
-                        dispatch({ type: PlayerActionType.tappedPlayBtn, isPlaying: state.isPlaying })
-                    }}
+                    
                 >
                     <Icon
-                        name={state.isPlaying ? "pause-circle-outline" : "play-circle-outline"}
+                        name={state.playState == PlayState.play ? "pause-circle-outline" : "play-circle-outline"}
                         size={ICON_SIZE}
                         color={Colors.white}
                         type={'MaterialIcons'}
-
+                        onPress={() => handlePlayButton()}
                     />
                 </TouchableOpacity>
             </View>
