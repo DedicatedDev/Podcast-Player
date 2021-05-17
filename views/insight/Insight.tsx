@@ -95,28 +95,6 @@ const InsightScreen = ({ route, navigation }) => {
         }
         setPlayTrackNo(index)
     }
-    // const renderEpisodes = () => {
-    //     return (
-    //         <View style={styles.list}>
-    //             {podcast.episodes.map((prop, index) => (
-    //                 <View key={index.toString()} style={styles.listItem}>
-    //                     <TouchableOpacity onPress={() => {
-    //                         return onPressItem(index);
-    //                     }}>
-    //                         <Text style={styles.listItemText}>{prop.title}</Text>
-    //                     </TouchableOpacity>
-    //                     <View style={{ flexDirection: "row" }}>
-    //                         <View style={{ width: "90%" }}>
-    //                             <Text style={styles.listItemDuration}>{prop.duration}</Text>
-    //                         </View>
-    //                         <View style={{ width: "10%" }}>{getButton(prop, index)}</View>
-    //                     </View>
-    //                 </View>
-    //             ))}
-    //         </View>
-    //     )
-    // }
-
 
     const renderEpisode = (episode: Episode, index: number) => {
         return (

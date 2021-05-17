@@ -1,6 +1,5 @@
 import * as React from 'react'
-import { Text, Image, View, Dimensions } from 'react-native'
-//import { i } from 'react-native-vector-icons'
+import { Dimensions } from 'react-native'
 import { createStackNavigator } from '@react-navigation/stack'
 
 // import Menu from '../components/Menu'
@@ -12,17 +11,38 @@ import { createStackNavigator } from '@react-navigation/stack'
 
 import * as RootNavigation from '../navigation/RootNavigation'
 import {HomeScreen} from '../views/home/Home'
-import { Button } from 'react-native-paper'
 import { InsightScreen } from '../views/insight/Insight'
+import Icon from 'react-native-dynamic-vector-icons'
+import About from '../views/sidemenus/about/About'
+import MenuBlock from '../views/sidemenus/menu/menu'
+import Profile from '../views/sidemenus/profile/Profile'
 
-const { width: DEVICE_WIDTH } = Dimensions.get('window')
 const Stack = createStackNavigator()
-
 const AppNavigator = () => {
   return (
-    <Stack.Navigator initialRouteName='Inwoven'>
-      <Stack.Screen name="Show" component={HomeScreen} />
-      <Stack.Screen name="Insight" component={InsightScreen} />
+    <Stack.Navigator initialRouteName='Show'
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: '#333333',
+        },
+        headerTintColor: '#fff',
+        headerRight: () => (
+          <Icon
+            name='md-menu'
+            style={{ paddingRight: 5 }}
+            size={40}
+            color='white'
+            type = {'Ionicons'}
+            onPress={() => {RootNavigation.navigate('Menu',null)}}
+          />
+        ),
+      }}
+    >
+      <Stack.Screen name='Show' component={HomeScreen} />
+      <Stack.Screen name='Insight' component={InsightScreen} />
+      <Stack.Screen name = 'About' component={About} /> 
+      <Stack.Screen name ='Menu' component={MenuBlock} />
+      <Stack.Screen name='Profile' component={Profile} />
     </Stack.Navigator>
   )
 }
