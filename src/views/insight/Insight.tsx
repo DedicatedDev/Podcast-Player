@@ -15,7 +15,6 @@ import {
 } from 'react-native';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import { InsightHeaderViewModel, InsightViewModel } from './InsightViewModel';
-import { InsightHeader } from './InsightHeader'
 import { useRef, useEffect } from 'react';
 import { Episode, PodCast } from '../home/Model';
 import { useAppContextStore } from '../../context/AppContext';
@@ -25,6 +24,9 @@ import { LogBox } from 'react-native';
 import { decode } from 'html-entities';
 import StretchyHeader from '../components/StretchyHeader';
 import VirtualizedView from '../components/VirtualizedView';
+import { useDownloadService } from '../../services/download/DownloadService';
+import { Item } from 'react-native-paper/lib/typescript/components/Drawer/Drawer';
+import { DownloadProgress } from '../../services/download/DownloadModel';
 // import StretchableHeader from 'react-native-stretchable-header';
 
 const headerHeight = 150 * 2;
@@ -36,28 +38,29 @@ const navbarHeight = screenHeight - windowHeight + StatusBar.currentHeight;
 const InsightScreen = ({ route, navigation }) => {
     const { showPlayer, setShowPlayer, setPlayTrackNo } = useAppContextStore()
     const { podcast } = useAppContextStore()
-    const headerInfo: InsightHeaderViewModel = { title: podcast?.title, showNotes: podcast?.description, artwork: podcast?.artwork }
- 
+    
     useEffect(() => {
         LogBox.ignoreLogs(['VirtualizedLists should never be nested']);
     }, [])
 
-    const getButton = (_item: Episode, index: number) => {
-        // if (_item.isDownloading) {
-        //     return <ActivityIndicator size="small" color="#FFFFFF" />;
-        // } else 
-        if (_item.isDownloaded) {
-            return (
-                <TouchableOpacity>
-                    <Icon name="cloud-done-outline" size={24} color="white" type={'Ionicons'} />
-                </TouchableOpacity>
-            );
-        } else {
-            return (
-                <TouchableOpacity>
-                    <Icon name="cloud-outline" size={24} color="white" type={'Ionicons'} />
-                </TouchableOpacity>
-            );
+    const getButton = (_item: Episode) => {
+        switch (_item.isDownloaded) {
+            case DownloadProgress.downloaded:
+                return (
+                    <TouchableOpacity>
+                        <Icon name="cloud-done-outline" size={24} color="white" type={'Ionicons'} />
+                    </TouchableOpacity>
+                );
+                break;
+            case DownloadProgress.downloading:
+                return <ActivityIndicator size="small" color="#FFFFFF" />;
+            default:
+                return (
+                    <TouchableOpacity>
+                        <Icon name="cloud-outline" size={24} color="white" type={'Ionicons'} />
+                    </TouchableOpacity>
+                );
+                break;
         }
     };
     const onPressItem = (index: number) => {
@@ -66,9 +69,6 @@ const InsightScreen = ({ route, navigation }) => {
         }
         setPlayTrackNo(index)
     }
-
-   
-
     const renderEpisode = (episode: Episode, index: number) => {
         return (
             <View style={styles.listItem}>
@@ -82,7 +82,7 @@ const InsightScreen = ({ route, navigation }) => {
                     <View style={{ width: "90%" }}>
                         <Text style={styles.listItemDuration}>{episode.duration}</Text>
                     </View>
-                    <View style={{ width: "10%" }}>{getButton(episode, index)}</View>
+                    <View style={{ width: "10%" }}>{getButton(episode)}</View>
                 </View>
             </View>
         )

@@ -3,7 +3,7 @@ import { createContext, useReducer, useContext } from 'react'
 import { act } from 'react-test-renderer'
 import { PodCast } from '../views/home/Model'
 import { Audio } from "expo-av";
-import { DownloadStatus, initialDownloadStatus } from '../services/download/DownloadModel';
+import { DownloadProgress, DownloadStatus, initialDownloadStatus } from '../services/download/DownloadModel';
 import * as FileSystem from "expo-file-system";
 
 interface AppContextStatus {
@@ -98,8 +98,9 @@ export const AppContextProvider: React.FC = ({ children }) => {
 
     const dispatchSetPodcast = async (podcast: PodCast) => {
         const promise = podcast.episodes.map(async (item, index) => {
-            item.isDownloaded = await searchFile(item.uid);
-            if (item.isDownloaded) {
+            const isDownloaded =  await searchFile(item.uid);
+            if (isDownloaded) {
+                item.isDownloaded = DownloadProgress.downloaded
                 item.cachedUrl = FileSystem.documentDirectory + item.uid + ".mp3"
             }
             podcast.episodes[index] = item

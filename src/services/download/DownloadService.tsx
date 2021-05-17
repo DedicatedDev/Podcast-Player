@@ -35,13 +35,13 @@ export const useDownloadService = () => {
                 "https://www.learningcontainer.com/wp-content/uploads/2020/02/Kalimba.mp3",
                 FileSystem.documentDirectory + item.uid + ".mp3",
                 {},
-                (progress) => downloadCallback(progress)
+                (progress) => downloadCallback(progress,index)
             );
             await downloadResumable.downloadAsync();
             const cachedPath = FileSystem.documentDirectory + podcast.episodes[index].uid + ".mp3"
             setState({ ...state, progressStatus: DownloadProgress.downloaded, cachedPath: cachedPath, trackNo:index})
             let newEpisodes = podcast.episodes;
-            newEpisodes[index].isDownloaded = true;
+            newEpisodes[index].isDownloaded = DownloadProgress.downloaded;
             newEpisodes[index].cachedUrl = cachedPath;
             setPodcast({...podcast, episodes:newEpisodes})
         } else {
@@ -49,72 +49,30 @@ export const useDownloadService = () => {
             const cachedPath = FileSystem.documentDirectory + item.uid + ".mp3"
             setState({ ...state, progressStatus: DownloadProgress.downloaded, cachedPath: cachedPath, trackNo:index})
             let newEpisodes = podcast.episodes;
-            newEpisodes[index].isDownloaded = true;
+            newEpisodes[index].isDownloaded = DownloadProgress.downloaded;
             newEpisodes[index].cachedUrl = cachedPath;
             setPodcast({ ...podcast, episodes: newEpisodes })
         };
     }
 
-    // const onDownloaded = useCallback(
-    //     async (index) => {
-    //         let _items = [...data];
-    //         const tmp = await FileSystem.getInfoAsync(
-    //             FileSystem.documentDirectory + _items[index].uid + ".mp3"
-    //         );
-    //         _items[index] = {
-    //             ..._items[index],
-    //             isDownloading: false,
-    //             isDownloaded: Platform.OS === "ios" ? true : tmp.exists,
-    //         };
-    //         setData(_items);
-    //     },
-    //     [data, setData]
-    // );
-
-    // const deleteFile = useCallback(
-    //     async (item, index) => {
-    //         const fileInfo = await FileSystem.getInfoAsync(
-    //             FileSystem.documentDirectory + item.uid + ".mp3"
-    //         );
-    //         await FileSystem.deleteAsync(fileInfo.uri);
-    //         let _items = [...data];
-    //         _items[index] = { ..._items[index], isDownloaded: false };
-    //         setData(_items);
-    //     },
-    //     [data, setData]
-    // );
 
     const downloadCallback =
-        async (downloadProgress:FileSystem.DownloadProgressData) => {
+        async (downloadProgress:FileSystem.DownloadProgressData,index:number) => {
             const progress =
                 downloadProgress.totalBytesWritten /
                 downloadProgress.totalBytesExpectedToWrite;
 
             if (progress < 1) {
-                if (state.downloadProgress != DownloadProgress.downloading) {
+                if (state.progressStatus != DownloadProgress.downloading) {
                     setState({ ...state, progressStatus: DownloadProgress.downloading })
+                    let newEpisodes = podcast.episodes;
+                    newEpisodes[index].isDownloaded = DownloadProgress.downloading;
+                    setPodcast({ ...podcast, episodes: newEpisodes })
                 } 
             } else {
                 const cachedPath = FileSystem.documentDirectory + podcast.episodes[playTrackNo].uid + ".mp3"
                 setState({ ...state, progressStatus: DownloadProgress.downloaded, cachedPath: cachedPath }) 
             }
         };
-
-    // const onDownloaded = useCallback(
-    //     async (index) => {
-    //         let _items = [...data];
-    //         const tmp = await FileSystem.getInfoAsync(
-    //             FileSystem.documentDirectory + _items[index].uid + ".mp3"
-    //         );
-    //         _items[index] = {
-    //             ..._items[index],
-    //             isDownloading: false,
-    //             isDownloaded: Platform.OS === "ios" ? true : tmp.exists,
-    //         };
-    //         setData(_items);
-    //     },
-    //     [data, setData]
-    // );
-
     return { downloadStatus: state,downloadFile}
 }

@@ -1,3 +1,4 @@
+import { DownloadProgress } from './../../services/download/DownloadModel';
 
 export interface PodCast{
     id:number,
@@ -20,7 +21,7 @@ export interface PodCast{
 export interface Episode {
     id: number,
     uid:string,
-    isDownloaded:boolean,
+    isDownloaded:DownloadProgress,
     cachedUrl:string,
     podcast_id: number,
     title:string|null,

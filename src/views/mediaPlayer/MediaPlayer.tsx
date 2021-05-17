@@ -134,7 +134,8 @@ const MediaPlayer = () => {
             return <View></View>;
         }
     }
-    return playerRender();
+    
+    return playerRender()
 }
 
 export { MediaPlayer };
