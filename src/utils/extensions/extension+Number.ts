@@ -1,5 +1,7 @@
 interface Number {
     getMediaPlayTimeStamp():String
+    adjustedV():number
+    adjustedH():number
 }
 Number.prototype.getMediaPlayTimeStamp = function():String{
     const totalSeconds = this / 1000;
@@ -8,3 +10,16 @@ Number.prototype.getMediaPlayTimeStamp = function():String{
     const padWithZero = (number: Number) => `${number < 10 ? "0" : ""}${number}`;
     return padWithZero(minutes) + ":" + padWithZero(seconds);
 }
+
+Number.prototype.adjustedH = function():number{
+ 
+    return 
+}
+
+Number.prototype.adjustedV = function():number{
+    return 
+}
+
+
+
+

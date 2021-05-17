@@ -9,7 +9,7 @@ import { createStackNavigator } from '@react-navigation/stack'
 // import Insight from '../components/Insight'
 // import Profile from '../components/Profile'
 
-import * as RootNavigation from '../navigation/RootNavigation'
+import * as RootNavigation from './RootNavigation'
 import {HomeScreen} from '../views/home/Home'
 import { InsightScreen } from '../views/insight/Insight'
 import Icon from 'react-native-dynamic-vector-icons'

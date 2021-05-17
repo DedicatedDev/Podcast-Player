@@ -1,14 +1,15 @@
 import * as React from 'react'
-import { 
-    View, 
-    TouchableOpacity, 
-    Modal, 
-    Image, 
-    TouchableHighlight, 
-    Text, 
-    Dimensions, 
-
-    StyleSheet} from 'react-native'
+import {
+    View,
+    TouchableOpacity,
+    Modal,
+    Image,
+    TouchableHighlight,
+    Text,
+    Dimensions,
+    StyleSheet,
+    SafeAreaView
+} from 'react-native'
 
 import Slider from '@react-native-community/slider'
 import Icon from 'react-native-dynamic-vector-icons'
@@ -16,50 +17,54 @@ import { Colors } from 'react-native/Libraries/NewAppScreen';
 import { useAppContextStore } from '../../../context/AppContext';
 import { PlayDisplayMode, PlayState, usePlayerContextStore } from '../MediaPlayerContext';
 import { decode } from "html-entities";
+import { deviceV } from '../../../utils/const/const';
 const ICON_SIZE = 40;
 const { width: DEVICE_WIDTH } = Dimensions.get("window");
 const BACKGROUND_COLOR = "#000000";
 const FONT_SIZE = 14;
 
 const Player = () => {
-    
-    const{
-      podcast,
-      playTrackNo,
-      mediaInstance,
-      setPlayTrackNo,
-      
+
+    const {
+        podcast,
+        playTrackNo,
+        mediaInstance,
+        setPlayTrackNo,
+
     } = useAppContextStore()
     const {
         playState,
+        playSpeed,
         playTime,
         totalTime,
         volume,
         setPlayState,
+        setPlaySpeed,
         setPlayerDisplayMode,
     } = usePlayerContextStore()
 
-    const _onSeekSliderValueChange = async(value:number) => {
-       await mediaInstance?.pauseAsync()
-       try {
-           await mediaInstance?.setPositionAsync(value * totalTime)
-       } catch (error) {
-          console.log(error)
-       }
-       
-       await mediaInstance?.playAsync()
-    }
-
-    const _onSeekSkip = async (deltaTime:number,direction:boolean) => {
-        await  mediaInstance?.pauseAsync()
+    const _onSeekSliderValueChange = async (value: number) => {
         try {
-            direction ? await mediaInstance?.setPositionAsync(playTime + deltaTime) :
-                await mediaInstance?.setPositionAsync(playTime - deltaTime)
+            await mediaInstance?.pauseAsync()
+            await mediaInstance?.setPositionAsync(value * totalTime)
+            await mediaInstance?.playAsync()
         } catch (error) {
             console.log(error)
         }
+    }
+
+    const _onSeekSkip = async (deltaTime: number, direction: boolean) => {
         
-        await mediaInstance.playAsync()
+        try {
+            await mediaInstance?.pauseAsync()
+            direction ? await mediaInstance?.setPositionAsync(playTime + deltaTime) :
+                await mediaInstance?.setPositionAsync(playTime - deltaTime)
+            await mediaInstance.playAsync()
+        } catch (error) {
+            console.log(error)
+        }
+
+        
     }
 
     const handlePlayButton = async () => {
@@ -76,16 +81,30 @@ const Player = () => {
                 break;
         }
     }
-    
+
+    const changeRate = async (rate:number) => { 
+        try {
+            const newRate = rate >= 2 ? 1 : rate + 0.5
+            await mediaInstance.pauseAsync()
+            await mediaInstance?.setRateAsync(
+                newRate,true
+            )
+            await mediaInstance?.playAsync()
+            setPlaySpeed(newRate)
+        } catch (error) {
+            console.log(error)
+        }
+       
+    }
 
     return (
         <Modal animationType="slide">
-            <View style={[styles.container, styles.modalContainer]}>
+            <SafeAreaView style={[styles.container, styles.modalContainer]}>
                 <TouchableOpacity
                     style={styles.closeButton}
-                  onPress={() => {
-                      return setPlayerDisplayMode(PlayDisplayMode.mini)
-                  }}
+                    onPress={() => {
+                        return setPlayerDisplayMode(PlayDisplayMode.mini)
+                    }}
                 >
                     <Icon
                         name="keyboard-arrow-down"
@@ -118,11 +137,11 @@ const Player = () => {
                 >
                     <TouchableOpacity
                         style={styles.controlButton}
-                         onPress={() => {
-                             if(playTrackNo-1>=0){
-                                 setPlayTrackNo(playTrackNo-1)
-                             }
-                         }}
+                        onPress={() => {
+                            if (playTrackNo - 1 >= 0) {
+                                setPlayTrackNo(playTrackNo - 1)
+                            }
+                        }}
                         disabled={false}
                     >
                         <Icon
@@ -135,8 +154,8 @@ const Player = () => {
                     <TouchableHighlight
                         underlayColor={BACKGROUND_COLOR}
                         style={styles.controlButton}
-                        onPress={()=>{
-                            return _onSeekSkip(1500,false)
+                        onPress={() => {
+                            return _onSeekSkip(1500, false)
                         }}
                         disabled={false}
                     >
@@ -179,7 +198,7 @@ const Player = () => {
                     <TouchableHighlight
                         underlayColor={BACKGROUND_COLOR}
                         style={styles.controlButton}
-                        onPress={()=>{
+                        onPress={() => {
                             return _onSeekSkip(1500, true)
                         }}
                         disabled={false}
@@ -193,8 +212,8 @@ const Player = () => {
                         //underlayColor={BACKGROUND_COLOR}
                         style={styles.controlButton}
                         onPress={() => {
-                            if(playTrackNo+1 < podcast?.episodes.length){
-                                setPlayTrackNo(playTrackNo+1)
+                            if (playTrackNo + 1 < podcast?.episodes.length) {
+                                setPlayTrackNo(playTrackNo + 1)
                             }
                         }}
                         disabled={false}
@@ -210,7 +229,7 @@ const Player = () => {
                 <View style={[styles.playbackContainer]}>
                     <Slider
                         style={styles.playbackSlider}
-                        value={playTime/totalTime}
+                        value={playTime / totalTime}
                         onValueChange={_onSeekSliderValueChange}
                         //onSlidingComplete={_onSeekSliderSlidingComplete}
                         thumbTintColor="#ffffff"
@@ -218,7 +237,9 @@ const Player = () => {
                         disabled={false}
                     />
                 </View>
-                <View>
+                <View
+                    style={styles.noteContainer}
+                >
                     <Text style={styles.textShowNotes}>{
                         decode(podcast?.episodes[playTrackNo].description)
                     }</Text>
@@ -255,21 +276,20 @@ const Player = () => {
                 >
                     <View>
                         <TouchableOpacity
-                        //debounce={500}
-                        // onPress={() =>
-                        //     playbackInstance?.setRateAsync(rate >= 2 ? 1 : rate + 0.5)
-                        // }
+                         onPress={() =>
+                             changeRate(playSpeed)
+                         }
                         >
-                            <Text style={[styles.textPlayRate]}>{"rate"} x</Text>
+                            <Text style={[styles.textPlayRate]}>{playSpeed} x</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
-            </View>
+            </SafeAreaView>
         </Modal>
     )
 }
 
-export {Player}
+export { Player }
 
 const styles = StyleSheet.create({
     playerContainer: {
@@ -367,14 +387,19 @@ const styles = StyleSheet.create({
         fontSize: 9,
         marginTop: 5,
     },
+    noteContainer: {
+        minHeight: '10%',
+        maxHeight: '40%',
+        alignItems: 'flex-start'
+    },
     textShowNotes: {
         fontSize: FONT_SIZE,
         color: "#ffffff",
         textAlign: "center",
-        minWidth: DEVICE_WIDTH / 1.2,
-        maxWidth: DEVICE_WIDTH / 1.2,
+        minWidth: '80%',
+        maxWidth: '80%',
         marginTop: -15,
-        marginBottom: 45,
+        marginBottom: 25,
     },
     textPlayRate: {
         fontSize: 18,
@@ -408,12 +433,10 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: "row",
         alignItems: "center",
-        justifyContent: "space-between",
-        minWidth: DEVICE_WIDTH - 40,
-        maxWidth: DEVICE_WIDTH - 40,
+        justifyContent: "center",
     },
     volumeSlider: {
-        width: DEVICE_WIDTH - 80,
+        width: '70%'
     },
     buttonsContainerBottomRow: {
         alignSelf: "stretch",

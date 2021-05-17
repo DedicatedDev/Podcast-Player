@@ -9,7 +9,8 @@ import {
     Image,
     StyleSheet,
     Dimensions,
-    Slider
+    Slider,
+    LogBox
 } from 'react-native'
 import Icon from "react-native-dynamic-vector-icons";
 import { Colors } from 'react-native/Libraries/NewAppScreen';
@@ -21,6 +22,7 @@ import { Sound } from 'expo-av/build/Audio';
 import { DownloadProgress } from '../../../services/download/DownloadModel';
 import '../../../utils/extensions/extension+Number';
 import { PlayDisplayMode, PlayState, usePlayerContextStore } from '../MediaPlayerContext';
+import { ignoreMsg } from '../../../utils/const/const';
 const ICON_SIZE = 40;
 const { width: DEVICE_WIDTH } = Dimensions.get("window");
 const BACKGROUND_COLOR = "#000000";
@@ -32,6 +34,7 @@ const MiniPlayer = () => {
         visible,
         playState,
         playTime,
+        totalTime,
         setPlayerDisplayMode,
         setPlayState
     } = usePlayerContextStore()
@@ -55,6 +58,10 @@ const MiniPlayer = () => {
         }
     }
 
+    useEffect(() => {
+        LogBox.ignoreLogs(ignoreMsg);
+    }, [])
+
 
     const renderPlayStatus = () => {
         switch (playState) {
@@ -62,10 +69,10 @@ const MiniPlayer = () => {
                 return 'Loading...'
                 break;
             case PlayState.stop:
-                return `${playTime?.getMediaPlayTimeStamp()}/${playTime?.getMediaPlayTimeStamp()}`
+                return `${playTime?.getMediaPlayTimeStamp()}/${totalTime?.getMediaPlayTimeStamp()}`
                 break;
             case PlayState.play:
-                return `${playTime?.getMediaPlayTimeStamp()}/${playTime?.getMediaPlayTimeStamp()}`
+                return `${playTime?.getMediaPlayTimeStamp()}/${totalTime?.getMediaPlayTimeStamp()}`
                 break;
             default:
                 return "Buffering"

@@ -4,10 +4,8 @@ import { EndPoint } from '../../services/network/Endpoint';
 import { HttpMethod } from '../../services/network/Http_methods';
 import { useNetworkService } from '../../services/network/NetworkService';
 import { PodCast } from './Model';
-import { InsightViewModel } from '../insight/InsightViewModel'
 import { useAppContextStore } from '../../context/AppContext';
-import { useEffect } from 'react';
-import * as FileSystem from "expo-file-system";
+
 
 const HomeScreen = ({ navigation }) => {
 

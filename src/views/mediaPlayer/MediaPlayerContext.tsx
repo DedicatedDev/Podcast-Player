@@ -1,7 +1,7 @@
 
 import { createContext, useReducer, useContext } from 'react';
 import * as React from 'react'
-import { Episode } from './../home/Model';
+import { Episode } from '../home/Model';
 
 export interface PlayerContextStatus {
     displayMode: PlayDisplayMode,
@@ -25,9 +25,9 @@ export interface PlayerContextStatus {
 }
 
 export enum PlaySpeed {
-    normal,
-    middle,
-    twice
+    normal = 1,
+    middle = 1.5,
+    twice = 2
 }
 
 export enum PlayState {
@@ -100,6 +100,8 @@ const PlayerContextReducer = (state:PlayerContextStatus,action:PlayerActions)=>{
     switch (action.type) {
         case PlayerActionType.setDisplayMode:
             return { ...state, displayMode: action.displayMode }
+        case PlayerActionType.setPlaySpeed:
+            return { ...state, playSpeed: action.speed }
         case PlayerActionType.setVisible:
             return { ...state, visible:  action.visible }
         case PlayerActionType.setPlayMode:

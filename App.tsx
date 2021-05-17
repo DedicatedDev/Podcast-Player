@@ -9,11 +9,11 @@
 import * as React from 'react';
 import { DarkTheme, NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { navigationRef } from './navigation/RootNavigation';
-import AppNavigator from './navigation/AppNavigator';
-import { AppContextProvider, useAppContextStore } from './context/AppContext'
-import { MediaPlayer } from './views/mediaPlayer/MediaPlayer';
-import { PlayerContextProvider } from './views/mediaPlayer/MediaPlayerContext';
+import { navigationRef } from './src/navigation/RootNavigation';
+import AppNavigator from './src/navigation/AppNavigator';
+import { AppContextProvider, useAppContextStore } from './src/context/AppContext'
+import { MediaPlayer } from './src/views/mediaPlayer/MediaPlayer';
+import { PlayerContextProvider } from './src/views/mediaPlayer/MediaPlayerContext';
 const Stack = createStackNavigator();
 const App = () => {
   return (
