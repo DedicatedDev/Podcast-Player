@@ -11,16 +11,18 @@ import { DarkTheme, NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { navigationRef } from './navigation/RootNavigation';
 import AppNavigator from './navigation/AppNavigator';
-import { MiniPlayer } from './views/mediaPlayer/miniPlayer/MiniPlayer';
-import { useState, useEffect} from 'react';
 import { AppContextProvider, useAppContextStore } from './context/AppContext'
+import { MediaPlayer } from './views/mediaPlayer/MediaPlayer';
+import { PlayerContextProvider } from './views/mediaPlayer/MediaPlayerContext';
 const Stack = createStackNavigator();
 const App = () => {
   return (
     <NavigationContainer ref={navigationRef} theme={DarkTheme}>
       <AppContextProvider>
         <AppNavigator />
-        <MiniPlayer />
+        <PlayerContextProvider>
+          <MediaPlayer />
+        </PlayerContextProvider>
       </AppContextProvider>
     </NavigationContainer>
   );

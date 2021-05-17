@@ -15,176 +15,73 @@ import Icon from "react-native-dynamic-vector-icons";
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import { useAppContextStore } from '../../../context/AppContext';
 import { useDownloadService } from '../../../services/download/DownloadService';
-import { PlayDisplayMode, PlayerModel, PlaySpeed, PlayerActions, PlayerActionType, PlayState } from './PlayerModel'
 import { Audio, AVPlaybackStatusToSet } from "expo-av";
 import { AVPlaybackSource, AVPlaybackStatus } from 'expo-av/build/AV';
 import { Sound } from 'expo-av/build/Audio';
 import { DownloadProgress } from '../../../services/download/DownloadModel';
 import '../../../utils/extensions/extension+Number';
+import { PlayDisplayMode, PlayState, usePlayerContextStore } from '../MediaPlayerContext';
 const ICON_SIZE = 40;
 const { width: DEVICE_WIDTH } = Dimensions.get("window");
 const BACKGROUND_COLOR = "#000000";
 const FONT_SIZE = 14;
 
 
-
 const MiniPlayer = () => {
+    const {
+        visible,
+        playState,
+        playTime,
+        setPlayerDisplayMode,
+        setPlayState
+    } = usePlayerContextStore()
 
-    //reducer 
-    const ManagePlayer = (state: PlayerModel, action: PlayerActions) => {
-        switch (action.type) {
-            case PlayerActionType.tappedExpandBtn:
-                return { ...state, displayStyle: action.displayMode === PlayDisplayMode.mini ? PlayDisplayMode.full : PlayDisplayMode.mini }
-            case PlayerActionType.changedVisible:
-                return { ...state, isHidden: state.isHidden = !showPlayer }
-            case PlayerActionType.tappedPlayBtn:
-                console.log("this is working?")
-                console.log(action.playStatus)
-                return { ...state, playState: action.playStatus }
-            case PlayerActionType.loadNewItem:
-                return { ...state, playState: PlayState.loading }
-            case PlayerActionType.setPlayTime:
-                return { ...state, playTime: action.playTime }
-            case PlayerActionType.setTotalTime:
-                return { ...state, totalTime: action.totalTime }
-            case PlayerActionType.setCachedPath:
-                return { ...state, cachedPath: action.cachedPath }
+    const {
+        mediaInstance
+    } = useAppContextStore()
+   
+    const handlePlayButton = async () => {
+        switch (playState) {
+            case PlayState.play:
+                await mediaInstance?.pauseAsync()
+                setPlayState(PlayState.stop)
+                break;
+            case PlayState.stop:
+                await mediaInstance?.playAsync()
+                setPlayState(PlayState.play)
+                break;
             default:
                 break;
         }
     }
 
-    //define state 
-    const { podcast, showPlayer, playTrackNo, mediaInstance, setMediaInstance, setDownloadStatus } = useAppContextStore();
-    const initState: PlayerModel = {
-        displayStyle: PlayDisplayMode.mini,
-        isHidden: showPlayer,
-        playState: PlayState.loading,
-        cachedPath: null,
-        playlist: podcast && podcast.episodes,
-        playSpeed: PlaySpeed.normal,
-        playTime: 0.0,
-        totalTime: 0.0,
-    };
 
-
-    const _setNewMediaInstance = async (uri: string) => {
-        await mediaInstance?.unloadAsync()
-        const initialStatus: AVPlaybackStatusToSet = {
-            shouldPlay: true,
-            rate: 1.0,
-            androidImplementation: "MediaPlayer",
-            volume: 0.5,
-        };
-        const source: AVPlaybackSource = {
-            uri: uri
-        }
-        const { sound } = await Audio.Sound.createAsync(
-            source,
-            initialStatus,
-            _onPlaybackStatusUpdate
-        )
-        setMediaInstance(sound)
-    }
-
-    const _onPlaybackStatusUpdate = (status: AVPlaybackStatus) => {
-        if (status.isLoaded && status.isPlaying) {
-            if (state.totalTime != status.durationMillis) {
-                dispatch({ type: PlayerActionType.setTotalTime, totalTime: status.durationMillis })
-            }
-            dispatch({ type: PlayerActionType.setPlayTime, playTime: status.positionMillis })
-        } 
-    }
-
-    const [state, dispatch] = useReducer(ManagePlayer, initState);
-    const { downloadStatus } = useDownloadService()
-
-    // useMemo(async() => {
-    //     console.log(state.playState)
-    //     switch (state.playState) {
-    //         case PlayState.loading:
-    //             console.log("loading")
-    //            await mediaInstance?.unloadAsync()
-    //             break;
-    //         case PlayState.play:
-    //             await mediaInstance?.playAsync()
-    //             break;
-    //         case PlayState.stop:
-    //             await mediaInstance?.stopAsync()
-    //             break;
-    //         default:
-    //             break;
-    //     }
-    // }, [state.playState])
-
-    useEffect(() => {
-        dispatch({ type: PlayerActionType.loadNewItem });
-        const cachedPath = podcast?.episodes[playTrackNo].cachedUrl;
-        mediaInstance?.unloadAsync()
-        if (cachedPath != null) {
-            _setNewMediaInstance(cachedPath)
-            console.log(state.playState)
-            dispatch({ type: PlayerActionType.tappedPlayBtn, playStatus: PlayState.play });
-        }
-    }, [playTrackNo])
-
-    useMemo(async () => {
-        if (downloadStatus.progressStatus == DownloadProgress.downloaded && playTrackNo == downloadStatus.trackNo) {
-            const cachedPath = downloadStatus.cachedPath;
-            await _setNewMediaInstance(cachedPath)
-            dispatch({ type: PlayerActionType.setCachedPath, cachedPath: cachedPath });
-            dispatch({ type: PlayerActionType.tappedPlayBtn, playStatus: PlayState.play });
-        }
-    }, [downloadStatus.progressStatus])
-
-    useMemo(() => {
-        dispatch({ type: PlayerActionType.changedVisible, isHidden: showPlayer })
-        return () => {
-            state.isHidden = true
-        }
-    }, [showPlayer])
-
-     const renderPlayStatus = () => {
-   
-        switch (state.playState) {
+    const renderPlayStatus = () => {
+        switch (playState) {
             case PlayState.loading:
                 return 'Loading...'
                 break;
             case PlayState.stop:
-                return `${state.playTime?.getMediaPlayTimeStamp()}/${state.totalTime?.getMediaPlayTimeStamp()}`
+                return `${playTime?.getMediaPlayTimeStamp()}/${playTime?.getMediaPlayTimeStamp()}`
                 break;
             case PlayState.play:
-                return `${state.playTime?.getMediaPlayTimeStamp()}/${state.totalTime?.getMediaPlayTimeStamp()}`
+                return `${playTime?.getMediaPlayTimeStamp()}/${playTime?.getMediaPlayTimeStamp()}`
                 break;
             default:
                 return "Buffering"
                 break;
         }
-     }
-
-    const handlePlayButton = async() => {
-        switch (state.playState) {
-            case PlayState.play:
-                await mediaInstance?.pauseAsync()
-                dispatch({ type: PlayerActionType.tappedPlayBtn, playStatus: PlayState.stop })
-                break;
-            case PlayState.stop:
-                 await mediaInstance?.playAsync()
-                 dispatch({ type: PlayerActionType.tappedPlayBtn, playStatus: PlayState.play })
-                 break;
-            default:
-                break;
-        }
     }
-
     return (
-        <View style={[styles.playerContainer, { display: state.isHidden ? 'none' : 'flex' }]}>
+        <View style={[styles.playerContainer]}>
             <View style={styles.miniPlayerContainer}>
                 <TouchableOpacity style={styles.expandButton}
-                    onPress={() => dispatch({ type: PlayerActionType.tappedExpandBtn, displayMode: state.displayStyle })}
+                    onPress={() => {
+                        return setPlayerDisplayMode(PlayDisplayMode.full)
+                    }}
                 >
                     <Icon
-                        name={state.displayStyle == PlayDisplayMode.full ? "keyboard-arrow-down" : "keyboard-arrow-up"}
+                        name={"keyboard-arrow-up"}
                         size={ICON_SIZE}
                         type={'MaterialIcons'}
                         color="#ffffff"
@@ -196,10 +93,10 @@ const MiniPlayer = () => {
                 <TouchableOpacity
                     style={styles.playPauseButton}
                     disabled={false}
-                    
+
                 >
                     <Icon
-                        name={state.playState == PlayState.play ? "pause-circle-outline" : "play-circle-outline"}
+                        name={playState == PlayState.play ? "pause-circle-outline" : "play-circle-outline"}
                         size={ICON_SIZE}
                         color={Colors.white}
                         type={'MaterialIcons'}
@@ -207,8 +104,7 @@ const MiniPlayer = () => {
                     />
                 </TouchableOpacity>
             </View>
-        </View>
-    );
+        </View>)
 }
 
 export { MiniPlayer };
@@ -218,7 +114,6 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         width: "100%",
         height: 100,
-        display: 'none'
     },
     closeButton: {
         position: "absolute",
