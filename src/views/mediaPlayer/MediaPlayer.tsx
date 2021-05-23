@@ -2,37 +2,25 @@ import * as React from 'react'
 import { useEffect, useReducer, useMemo, useCallback } from 'react';
 import {
     View,
-    TouchableOpacity,
-    TouchableHighlight,
-    Text,
-    Modal,
-    Image,
     StyleSheet,
     Dimensions,
-    Slider
 } from 'react-native'
-import Icon from "react-native-dynamic-vector-icons";
-import { Colors } from 'react-native/Libraries/NewAppScreen';
+
 import { useAppContextStore } from '../../context/AppContext';
 import { useDownloadService } from '../../services/download/DownloadService';
 import { Audio, AVPlaybackStatusToSet } from "expo-av";
 import { AVPlaybackSource, AVPlaybackStatus } from 'expo-av/build/AV';
-import { Sound } from 'expo-av/build/Audio';
 import { DownloadProgress } from '../../services/download/DownloadModel';
 import '../../utils/extensions/extension+Number';
 import { Player } from './player/Player';
 import { MiniPlayer } from './miniPlayer/MiniPlayer';
-import { onChange } from 'react-native-reanimated';
 import { PlayDisplayMode, PlayerContextProvider, PlayState, usePlayerContextStore } from './MediaPlayerContext';
 const ICON_SIZE = 40;
 const { width: DEVICE_WIDTH } = Dimensions.get("window");
 const BACKGROUND_COLOR = "#000000";
 const FONT_SIZE = 14;
 
-
-
 const MediaPlayer = () => {
-
     const { podcast, showPlayer, playTrackNo, mediaInstance, setMediaInstance, setDownloadStatus } = useAppContextStore();
     const {
         displayMode,
@@ -46,7 +34,6 @@ const MediaPlayer = () => {
     } = usePlayerContextStore()
 
     const { downloadStatus } = useDownloadService()
-
     const _setNewMediaInstance = async (uri: string) => {
         try {
             await mediaInstance?.unloadAsync()
@@ -134,7 +121,6 @@ const MediaPlayer = () => {
             return <View></View>;
         }
     }
-    
     return playerRender()
 }
 

@@ -9,10 +9,11 @@ interface NetRes<T>{
   isLoading:boolean
 }
 
-export function useNetworkService<T>(
+export function useNetworkService<T,U>(
   url: string,
   method: HttpMethod = HttpMethod.get,
-  headers: Headers | null
+  headers: Headers | null,
+  body:U
 ){
   const initValue:NetRes<T> = {data:null, error:null , isLoading: false};
   const [res, setRes] = useState<NetRes<T>>(initValue);

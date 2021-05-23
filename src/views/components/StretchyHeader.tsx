@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { View, StyleSheet, Animated, ImageSourcePropType } from 'react-native';
 import { deviceV, DEVICE_WIDTH } from '../../utils/const/const';
-import VirtualizedView from './VirtualizedView';
+
 
 export const animatedValueScrollY = new Animated.Value(0);
 

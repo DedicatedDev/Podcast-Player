@@ -14,16 +14,48 @@ import AppNavigator from './src/navigation/AppNavigator';
 import { AppContextProvider, useAppContextStore } from './src/context/AppContext'
 import { MediaPlayer } from './src/views/mediaPlayer/MediaPlayer';
 import { PlayerContextProvider } from './src/views/mediaPlayer/MediaPlayerContext';
+import * as Keychain from 'react-native-keychain'
+import { useEffect, useState } from 'react';
+import LoginScreen from './src/views/auth/Login';
 const Stack = createStackNavigator();
 const App = () => {
+  const [isLogin, setIsLogin] = useState<boolean>(false)
+  useEffect(() => {
+    const checkToken = async () => {
+      try {
+        const credentials = await Keychain.getInternetCredentials("adyen.thomasjacobs.dev");
+        if (credentials) {
+          console.log('token is successfully loaded');
+          console.log(credentials)
+          setIsLogin(true);
+        } else {
+          setIsLogin(false);
+          console.log('user did not login')
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    checkToken()
+  })
+
+  const checkToken = () => {
+    console.log(isLogin)
+    if (isLogin) {
+      return (
+        <AppContextProvider>
+          <AppNavigator />
+          <PlayerContextProvider>
+            <MediaPlayer />
+          </PlayerContextProvider>
+        </AppContextProvider>)
+    } else {
+      return (<LoginScreen></LoginScreen>)
+    }
+  }
   return (
     <NavigationContainer ref={navigationRef} theme={DarkTheme}>
-      <AppContextProvider>
-        <AppNavigator />
-        <PlayerContextProvider>
-          <MediaPlayer />
-        </PlayerContextProvider>
-      </AppContextProvider>
+      {checkToken()}
     </NavigationContainer>
   );
 };

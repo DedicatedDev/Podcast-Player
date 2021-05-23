@@ -10,14 +10,24 @@ import {
   Linking,
 } from 'react-native'
 import { TextInput, Button, Text, Title } from 'react-native-paper'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { EndPoint } from '../../services/network/Endpoint'
+import { useNetworkService } from '../../services/network/NetworkService'
+import { LoginInfo } from './LoginModel'
 
 const LoginScreen = () => {
   const [email, setEmail] = useState(String)
   const [password, setPassword] = useState()
+  const tryLogin = () =>{
+    const loginInfo: LoginInfo = {email:email,pass:password};
+    const endpoint = new EndPoint({ path: 'api/login', queries: [] });
+    
+    //useNetworkService()
+  }
   //const { loggingIn, doLogin, error } = useContext(mainContext)
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
         <View style={styles.logo}>
           <Image
             source={require('../../assets/logo-color.jpg')}
@@ -74,7 +84,7 @@ const LoginScreen = () => {
           }}>
           Wachtwoord vergeten?
         </Text>
-      </View>
+      </SafeAreaView>
     </TouchableWithoutFeedback>
   )
 }
@@ -111,7 +121,7 @@ const styles = StyleSheet.create({
   },
   logo: {
     position: 'absolute',
-    top: 10,
+    top: 40,
   },
 })
 

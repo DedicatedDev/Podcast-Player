@@ -13,20 +13,17 @@ import {
     View,
     FlatList
 } from 'react-native';
-import { Colors } from 'react-native/Libraries/NewAppScreen';
-import { InsightHeaderViewModel, InsightViewModel } from './InsightViewModel';
-import { useRef, useEffect } from 'react';
-import { Episode, PodCast } from '../home/Model';
+
+import { useEffect } from 'react';
+import { Episode } from '../home/Model';
 import { useAppContextStore } from '../../context/AppContext';
 import Icon from "react-native-dynamic-vector-icons";
 import { LogBox } from 'react-native';
 
 import { decode } from 'html-entities';
 import StretchyHeader from '../components/StretchyHeader';
-import VirtualizedView from '../components/VirtualizedView';
-import { useDownloadService } from '../../services/download/DownloadService';
-import { Item } from 'react-native-paper/lib/typescript/components/Drawer/Drawer';
 import { DownloadProgress } from '../../services/download/DownloadModel';
+import '../../utils/extensions/extension+Number'
 // import StretchableHeader from 'react-native-stretchable-header';
 
 const headerHeight = 150 * 2;
@@ -38,7 +35,7 @@ const navbarHeight = screenHeight - windowHeight + StatusBar.currentHeight;
 const InsightScreen = ({ route, navigation }) => {
     const { showPlayer, setShowPlayer, setPlayTrackNo } = useAppContextStore()
     const { podcast } = useAppContextStore()
-    
+
     useEffect(() => {
         LogBox.ignoreLogs(['VirtualizedLists should never be nested']);
     }, [])
@@ -80,7 +77,7 @@ const InsightScreen = ({ route, navigation }) => {
                 </TouchableOpacity>
                 <View style={{ flexDirection: "row" }}>
                     <View style={{ width: "90%" }}>
-                        <Text style={styles.listItemDuration}>{episode.duration}</Text>
+                        <Text style={styles.listItemDuration}>{parseFloat(episode.duration)}</Text>
                     </View>
                     <View style={{ width: "10%" }}>{getButton(episode)}</View>
                 </View>
@@ -89,8 +86,12 @@ const InsightScreen = ({ route, navigation }) => {
     }
 
     const renderHeader = () => {
-        return(
-            <View>
+        return (
+            <View
+                style={{
+                    paddingBottom: 15
+                }}
+            >
                 <Text style={styles.title}>{podcast?.title}</Text>
                 <Text style={styles.text}>{decode(podcast?.description)}</Text>
             </View>
@@ -98,25 +99,25 @@ const InsightScreen = ({ route, navigation }) => {
     }
 
     const renderContentView = () => {
-     
-            return (
-                <View
-                style={{zIndex:-1,flex:-1}}
-                >
-                   {renderHeader()}
-                    <FlatList
-                        
-                        data={podcast?.episodes}
-                        renderItem={(item) => {
-                            return renderEpisode(item.item, item.index)
-                        }
-                        }
-                        keyExtractor={(item, id) => id.toString()}
-                    />
-                </View>
-            )
-       
-        
+
+        return (
+            <View
+                style={{ zIndex: -1, flex: -1 }}
+            >
+                {renderHeader()}
+                <FlatList
+
+                    data={podcast?.episodes}
+                    renderItem={(item) => {
+                        return renderEpisode(item.item, item.index)
+                    }
+                    }
+                    keyExtractor={(item, id) => id.toString()}
+                />
+            </View>
+        )
+
+
     }
 
     return (

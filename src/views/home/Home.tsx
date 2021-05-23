@@ -13,7 +13,7 @@ const HomeScreen = ({ navigation }) => {
     var endpoint = new EndPoint({ path: 'app.json', queries: [] });
     return endpoint.url();
   };
-  const { data } = useNetworkService<PodCast[]>(configUrl(), HttpMethod.get, null);
+  const { data } = useNetworkService<PodCast[],null>(configUrl(), HttpMethod.get, null,null);
   const {setPodcast } = useAppContextStore()
 
   
